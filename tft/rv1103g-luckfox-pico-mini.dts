@@ -1,0 +1,191 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2023 Luckfox Electronics Co., Ltd.
+ */
+
+/dts-v1/;
+
+#include "rv1103.dtsi"
+#include "rv1106-evb.dtsi"
+#include "rv1103-luckfox-pico-ipc.dtsi"
+
+/ {
+	model = "Luckfox Pico Mini";
+	compatible = "rockchip,rv1103g-38x38-ipc-v10", "rockchip,rv1103";
+
+	// /*LCD_CS*/
+	// gpio1pc0:gpio1pc0 {
+	// 	compatible = "regulator-fixed";
+	// 	pinctrl-names = "default";
+	// 	pinctrl-0 = <&gpio1_pc0>;
+	// 	regulator-name = "gpio1_pc0";
+	// 	regulator-always-on;
+	// };
+
+	/*LCD_BL*/
+	backlight:backlight{        
+        compatible = "gpio-backlight";
+        pinctrl-names = "default";
+        pinctrl-0 = <&gpio1_pc5>;
+        gpios = <&gpio1 RK_PC5 GPIO_ACTIVE_HIGH>;
+        default-on;
+    };
+
+	/*LCD_DC*/
+	gpio1pc4:gpio1pc4 {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio1_pc4>;
+		regulator-name = "gpio1_pc4";
+		regulator-always-on;
+	};
+ 
+	/*LCD_RES*/
+	gpio1pc3:gpio1pc3 {
+		compatible = "regulator-fixed";
+		pinctrl-names = "default";
+		pinctrl-0 = <&gpio1_pc3>;
+		regulator-name = "gpio1_pc3";
+		regulator-always-on;
+	};
+};
+
+/**********SFC**********/
+&sfc {
+	status = "okay";
+	flash@0 {
+		compatible = "spi-nand";
+		reg = <0>;
+		spi-max-frequency = <75000000>;
+		spi-rx-bus-width = <4>;
+		spi-tx-bus-width = <1>;
+	};
+};
+
+/**********SDMMC**********/
+&sdmmc {
+	max-frequency = <50000000>;
+	no-sdio;
+	no-mmc;
+	bus-width = <4>;
+	cap-mmc-highspeed;
+	cap-sd-highspeed;
+	disable-wp;
+	pinctrl-names = "default";
+	pinctrl-0 = <&sdmmc0_clk &sdmmc0_cmd &sdmmc0_det &sdmmc0_bus4>;
+	status = "okay";
+};
+
+/**********ETH**********/
+&gmac {
+	status = "disabled";
+};
+
+/**********USB**********/
+&usbdrd_dwc3 {
+	status = "okay";
+	dr_mode = "peripheral";
+};
+
+/**********SPI**********/
+
+
+&pinctrl {
+	// /*LCD_CS*/
+	// gpio1-pc0 {
+    //    	gpio1_pc0:gpio1-pc0 {
+    //    			rockchip,pins = <1 RK_PC0 RK_FUNC_GPIO &pcfg_pull_none>;
+    //     };
+    // };
+ 
+	/*LCD_BL*/
+	gpio1-pc5 {
+		gpio1_pc5:gpio1-pc5 {
+			rockchip,pins =	<1 RK_PC5 RK_FUNC_GPIO &pcfg_pull_none>;
+		};
+	};
+ 
+	/*LCD_DC*/
+   	gpio1-pc4 {
+        gpio1_pc4:gpio1-pc4 {
+       		rockchip,pins = <1 RK_PC4 RK_FUNC_GPIO &pcfg_pull_none>;
+        };
+  	};
+ 
+	/*LCD_RES*/
+	gpio1-pc3 {
+        gpio1_pc3:gpio1-pc3 {
+            rockchip,pins = <1 RK_PC3 RK_FUNC_GPIO &pcfg_pull_none>;
+        };
+    };
+ 
+	spi0 {
+		/omit-if-no-ref/
+		spi0m0_pins: spi0m0-pins {
+	   		rockchip,pins =
+			/* spi0_clk_m0 */
+			<1 RK_PC1 4 &pcfg_pull_none>,
+			/* spie_miso_m0 */
+			/* <1 RK_PC3 6 &pcfg_pull_none>, */
+			/* spi_mosi_m0 */
+			<1 RK_PC2 6 &pcfg_pull_none>;
+		};
+	};
+};
+
+/* SPI0_M0 */
+&spi0 {
+	status = "okay";
+	pinctrl-names = "default";
+	pinctrl-0 = <&spi0m0_pins>;
+	// cs-gpios = <&gpio1 RK_PC0 1>;
+	// cs-gpios = <&gpio1 26 1>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	lcd: lcd@0{
+		status = "okay";
+		compatible = "sitronix,st7789v"; 
+		reg = <0>;
+ 
+		spi-max-frequency = <48000000>;
+		spi-cpol;
+		spi-cpha;
+		width = <240>;
+		height = <240>;
+		rotate = <0>;				// 旋转角度，lcd驱动里会读取并设置对应寄存器
+		fps = <60>;
+		rgb;
+		buswidth = <8>;
+ 
+		// cs-gpios = <&gpio1 RK_PC0 GPIO_ACTIVE_LOW>;
+        backlight = <&backlight>;
+		dc-gpios = <&gpio1 RK_PC4 GPIO_ACTIVE_HIGH>;
+		reset-gpios = <&gpio1 RK_PC3 GPIO_ACTIVE_LOW>;
+ 
+		debug = <0x0>;
+	};
+};
+
+/**********I2C**********/
+/* I2C3_M1 */
+&i2c3 {
+	status = "disabled";
+	clock-frequency = <100000>;
+};
+
+/**********UART**********/
+/* UART3_M1 */
+&uart3 {
+	status = "disabled";
+};
+
+/* UART4_M1 */
+&uart4 {
+	status = "disabled";
+};
+
+/**********PWM**********/
+/* PWM1_M0 */
+&pwm1 {
+	status = "disabled";
+};
