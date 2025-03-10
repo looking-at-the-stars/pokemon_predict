@@ -82,7 +82,7 @@ void bgr888_to_rgb565(const cv::Mat& src, uint16_t* dst) {
     }
 }
 
-// 在显示帧上绘制结果（新增函数）
+// 在显示帧上绘制结果
 void draw_results(cv::Mat& frame, const mobilenet_result* results, char** labels) {
     const float FONT_SCALE = 0.4f;       // 缩小字体比例
     const int FONT_THICKNESS = 1;         // 减少线宽
